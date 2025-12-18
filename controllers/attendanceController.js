@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken";
 import Attendance from "../models/Attendance.js";
-import dotenv from "dotenv";
 import User from "../models/User.js";
+import Subject from "../models/Subject.js";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 dotenv.config();
 
 
@@ -15,6 +17,10 @@ export const generateQRSession = async (req, res) => {
     try {
     const subjectId = req.params.id; // get subject id from params
     const userId = req.body.userId;
+
+    const subjectName = await Subject.findById(subjectId).select("name");
+    if (!subjectName || subjectName.length === 0)
+        return  res.status(404).json({ message: "subjectId is not found" });
 
     const user = await User.findById(userId);
     // check if user is instructor
@@ -48,6 +54,36 @@ export const generateQRSession = async (req, res) => {
         }
         ));
 
+        await getAllStudents.forEach(async (student) => {
+        // send email to each student
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+        await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: student.email,
+        subject: "Lecture Attendance Alert",
+        html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
+            <p style="font-weight: bold; font-size: 1.1em; color: #333;">Dear ${student.name},</p>
+            <p style="color: #555;">
+                This is to inform you that attendance for your lecture in the subject <strong>${subjectName.name}</strong> is now open. 
+                Please make sure to mark your attendance promptly. You have <strong>30 minutes</strong> to complete it.
+            </p>
+            <p style="margin-top: 5px; color: #555;">
+                Best regards,<br/>
+                <span style="font-weight: bold; color: #007acc;">Attendance Management System</span>
+            </p>
+        </div>
+        `,
+        });
+    });
     // create new attendance record
     const attendance = new Attendance({
         subject: subjectId,
@@ -60,7 +96,7 @@ export const generateQRSession = async (req, res) => {
         {
         instructorId: userId,
         attendanceId: attendance._id,
-        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+        exp: Math.floor(Date.now() / 1000) + 30 * 60,
         },
         process.env.JWT_SECRET_KEY
     );
@@ -124,10 +160,7 @@ export const markAttendance = async (req, res) => {
  */
 export const markAttendanceForLeave = async (req, res) => {
     try {
-        const { session, userId } = req.body;
-
-        const decoded = jwt.verify(session, process.env.JWT_SECRET_KEY);
-        const { attendanceId } = decoded;
+        const { attendanceId, userId } = req.body;
         
         // check if user is student
         const student = await User.findById(userId);

@@ -30,7 +30,9 @@ const userSchema = mongoose.Schema({
     },
     stage: {
         type: String,
-        required: function() { return this.role === 1; }
+        required: function() { return this.role === 1; },
+        maxlength: 200,
+        trim: true
     },
     subjects: [{ 
         type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +41,6 @@ const userSchema = mongoose.Schema({
     department: {
         type: String,
         required: false,
-        minlength: 10,
         maxlength: 200,
         trim: true
     },
@@ -47,9 +48,8 @@ const userSchema = mongoose.Schema({
 
 
 //Generate Token
-userSchema.methods.generateToken = function(ipAddress){
-    return jwt.sign({id: this._id, role: this.role, ip: ipAddress }, process.env.JWT_SECRET_KEY, {expiresIn: '7d'});
-
+userSchema.methods.generateToken = function(userAgent){
+    return jwt.sign({id: this._id, role: this.role, ip: userAgent }, process.env.JWT_SECRET_KEY, {expiresIn: '30d'});
 }
 
 
@@ -60,8 +60,8 @@ export function validateAddUser(obj){
     name: Joi.string().trim().min(3).max(50).required(),
     email: Joi.string().trim().min(10).max(100).required(),
     role: Joi.valid(1, 2).default(1).required(),
-    stage: Joi.string().when('role', { is: 1, then: Joi.required(), otherwise: Joi.optional() }),
-    department: Joi.string().trim().min(10).max(200).optional(),
+    stage: Joi.string().max(200).when('role', { is: 2, then: Joi.optional(), otherwise: Joi.required()}).when('role', { is: 2, then: Joi.allow(""), otherwise: Joi.required()}),
+    department: Joi.string().trim().max(200).when('role', { is: 2, then: Joi.optional(), otherwise: Joi.required()}).when('role', { is: 2, then: Joi.allow(""), otherwise: Joi.required()}),
     })
     return schema.validate(obj)
 }
@@ -70,8 +70,9 @@ export function validateUpdateUser(obj){
     const schema = Joi.object({
     name: Joi.string().trim().min(3).max(50).optional(),
     email: Joi.string().trim().min(10).max(100).optional(),
-    stage: Joi.string().when('role', { is: 1, then: Joi.required(), otherwise: Joi.optional() }),
-    department: Joi.string().trim().min(10).max(200).optional(),
+    role: Joi.valid(1, 2).required(),
+    stage: Joi.string().max(200).when('role', { is: 2, then: Joi.allow(""), otherwise: Joi.required()}),
+    department: Joi.string().trim().max(200).when('role', { is: 2, then: Joi.allow(""), otherwise: Joi.required()}),
     })
     return schema.validate(obj)
 }

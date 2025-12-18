@@ -74,7 +74,7 @@ export const AddUser = async (req, res) => {
  */
 export const getUserById = async (req, res)=>{
     try{
-        const users = await User.findById(req.params.id).select('-otp -role -createdAt -updatedAt -subjects -__v -_id');
+        const users = await User.findById(req.params.id).select('-otp -createdAt -updatedAt -subjects -__v -_id');
         if (users === null || users.length === 0)
             return res.status(404).json({message: "user is not found"})
         res.status(200).json(users)
@@ -107,10 +107,15 @@ export const updateUser = async (req, res)=>{
         if (existing && existing._id.toString() !== userId) {
             return res.status(409).json({ message: "Email already in use by another account" });
         }
+
+        if (req.body.stage && user.stage !== req.body.stage) {
+            user.subjects = [];
+        };
         user.name = req.body.name;
         user.email = req.body.email;
         user.stage = req.body.stage;
         user.department = req.body.department;
+
         const saved = await user.save();
         const safe = saved.toObject();
         delete safe.otp;

@@ -87,7 +87,13 @@ export const deleteSubject = async (req, res) => {
         //check if subject exists
         let subject = await Subject.findOne({_id: req.params.id})
         if(!subject)
-            return res.status(400).json({message: 'the subject is not found.'})
+            return res.status(404).json({message: 'the subject is not found.'})
+
+        const students = await User.find({ subjects: subject._id });
+        for (let student of students) {
+                student.subjects = student.subjects.filter(subjId => subjId.toString() !== subject._id.toString());
+                await student.save();
+        }
         //delete subject
         subject = await Subject.findByIdAndDelete(req.params.id);
         res.status(200).json({message: "the subject have been deleted successfully."})

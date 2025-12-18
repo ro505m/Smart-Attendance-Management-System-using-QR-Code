@@ -23,13 +23,13 @@ export const verifyOTP = async (req, res) => {
         return res.status(400).json({message: "no OTP code found. Please request a new one."});
 
     if (new Date() > user.otp.expiresAt){
-        user.otp = undefined; // نحذف الكود
+        user.otp = undefined;
         await user.save();
         return res.status(400).json({message: "expired OTP code. Please request a new one."});
     }
     const maxAttempts = 5; // maximum number of allowed attempts
     if (user.otp.attempts >= maxAttempts){
-            user.otp = undefined; // نحذف الكود
+            user.otp = undefined;
             await user.save();
             return res.status(400).json({message: "too many incorrect attempts. Please request a new OTP code."});
     }
@@ -40,9 +40,9 @@ export const verifyOTP = async (req, res) => {
         return res.status(400).json({message: "invalid OTP code."});
     }
 
-    user.otp = undefined; // نحذف الكود
+    user.otp = undefined;
     await user.save();
-    const token = user.generateToken(req.ip);
+    const token = user.generateToken(req.headers['user-agent']);
     res.status(200).json({message: "your account has been verified successfully.", userId: user._id, userRole: user.role, token: token});
     } catch (error) {
     res.status(500).json({message: error.message});
@@ -95,7 +95,6 @@ export const login = async (req, res)=>{
         </div>
         `,
         });
-
         res.status(200).json({message: "A verification code has been sent to your email. Please verify your account using the code."});
     } catch(error){
         res.status(500).json({message: error.message});
