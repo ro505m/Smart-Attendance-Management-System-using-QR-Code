@@ -32,7 +32,7 @@ app.use(helmet());
 
 //Routes
 app.get("/api/test", (req, res) => {
-  res.json({ message: "Server is live!" });
+    res.json({ message: "Server is live!" });
 });
 
 app.use("/api/auth", authRouter);

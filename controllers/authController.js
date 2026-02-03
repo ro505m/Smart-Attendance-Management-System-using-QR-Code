@@ -62,9 +62,8 @@ export const login = async (req, res)=>{
 
     try{
         let user = await User.findOne({email: req.body.email});
-        console.log(req.body.email)
         if (!user)
-            return res.status(400).json({message: "wrong data.", user});
+            return res.status(400).json({message: "wrong data."});
         const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
         user.otp = { code: otpCode, expiresAt, attempts: 0 };
