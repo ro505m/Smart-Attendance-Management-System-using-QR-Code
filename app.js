@@ -41,7 +41,9 @@ app.use("/api/users", userRouter);
 // Error middlawere
 app.use(notFound);
 app.use(errorHandler);
+const PORT = process.env.PORT || 8000;
 
-app.listen(process.env.PORT, "0.0.0.0",()=>{
-    console.log(`server runing in ${process.env.MODE_ENV} mode on: http://localhost:${process.env.PORT}/`);
+// Start server
+app.listen(PORT, "0.0.0.0",()=>{
+    console.log(`Server running in ${process.env.MODE_ENV} mode, on port: ${PORT}`);
 })
