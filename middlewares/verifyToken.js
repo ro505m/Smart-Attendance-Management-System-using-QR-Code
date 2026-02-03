@@ -28,7 +28,10 @@ export function verifyUserToken(req, res, next){
 
 export function verifyInstructorToken(req, res, next){
     verifyToken(req, res, ()=>{
-        if(req.user.userAgent === req.headers['user-agent'] && req.user.role === 0 || req.user.role === 2)
+        if(
+            req.user.userAgent === req.headers['user-agent'] &&
+            (req.user.role === 0 || req.user.role === 2)
+        )
             next()
         else
             res.status(403).json({message: "you are not allowed!"})
@@ -37,7 +40,7 @@ export function verifyInstructorToken(req, res, next){
 
 export function verifyAdminToken(req, res, next){
     verifyToken(req, res, ()=>{
-        if(req.user.userAgent === req.headers['user-agent'] && req.user.role === 0)
+        if(req.user && req.user.userAgent === req.headers['user-agent'] && req.user.role === 0)
             next()
         else
             res.status(403).json({message: "you are not allowed!"})

@@ -22,15 +22,6 @@ const subjectSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// subjectSchema.pre("save", function (next) {
-//     if (!this.code) {
-//     const shortDept = this.department.substring(0, 3).toUpperCase();
-//     const rand = Math.floor(1000 + Math.random() * 9000);
-//     this.code = `${shortDept}-${rand}`;
-//     }
-//     next();
-// });
-
 
 export function validateSubject(obj) {
 const schema = Joi.object({

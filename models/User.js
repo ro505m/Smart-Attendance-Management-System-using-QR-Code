@@ -49,7 +49,7 @@ const userSchema = mongoose.Schema({
 
 //Generate Token
 userSchema.methods.generateToken = function(userAgent){
-    return jwt.sign({id: this._id, role: this.role, ip: userAgent }, process.env.JWT_SECRET_KEY, {expiresIn: '30d'});
+    return jwt.sign({id: this._id, role: this.role, userAgent: userAgent }, process.env.JWT_SECRET_KEY, {expiresIn: '30d'});
 }
 
 
