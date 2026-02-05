@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import User, { validateAddUser, validateUpdateUser } from "../models/User.js"
 
 
-
 /**
  *  @desc Get all students
  *  @route /api/users/students

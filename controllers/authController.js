@@ -1,8 +1,10 @@
 import User, { validateOTP, validateLogin} from "../models/User.js";
-import nodemailer from "nodemailer";
+
+
 import dotenv from "dotenv";
 dotenv.config();
-
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * @desc verify OTP
@@ -68,18 +70,9 @@ export const login = async (req, res)=>{
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
         user.otp = { code: otpCode, expiresAt, attempts: 0 };
         await user.save();
-        const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-        });
-
-        await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        
+        await resend.emails.send({
+        from: "Smart Attendance System <noreply@smartattendance.com>",
         to: user.email,
         subject: "Your Security Code",
         html: `

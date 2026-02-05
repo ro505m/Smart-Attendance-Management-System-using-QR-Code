@@ -2,7 +2,10 @@ import jwt from "jsonwebtoken";
 import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
 import Subject from "../models/Subject.js";
-import nodemailer from "nodemailer";
+
+
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY);
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -56,17 +59,8 @@ export const generateQRSession = async (req, res) => {
 
         await getAllStudents.forEach(async (student) => {
         // send email to each student
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-        await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        await resend.emails.send({
+        from: "Smart Attendance System <noreply@smartattendance.com>",
         to: student.email,
         subject: "Lecture Attendance Alert",
         html: `

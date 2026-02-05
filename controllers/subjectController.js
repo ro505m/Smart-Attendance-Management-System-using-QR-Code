@@ -3,12 +3,6 @@ import User from "../models/User.js";
 import { validateSubject } from "../models/Subject.js";
 
 
-
-
-
-
-
-
 /**
  * @route /api/subject
  * @method GET
