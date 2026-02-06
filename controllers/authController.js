@@ -1,10 +1,9 @@
 import User, { validateOTP, validateLogin} from "../models/User.js";
-
+import axios from "axios";
 
 import dotenv from "dotenv";
 dotenv.config();
-import { Resend } from "resend";
-const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 /**
  * @desc verify OTP
@@ -71,23 +70,34 @@ export const login = async (req, res)=>{
         user.otp = { code: otpCode, expiresAt, attempts: 0 };
         await user.save();
         
-        await resend.emails.send({
-        from: "Smart Attendance System <noreply@smartattendance.com>",
-        to: user.email,
-        subject: "Your Security Code",
-        html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #eef1f6; padding: 40px;">
-        <div style="max-width: 420px; margin: auto; background: #fff; border-radius: 14px; padding: 25px 30px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
-        <h2 style="color: #0f57ff; font-size: 22px; margin-bottom: 15px;">رمز التحقق الأمني</h2>
-        <p style="font-size: 15px; color: #444; margin-bottom: 20px;">يرجى استخدام الرمز أدناه لإتمام عملية تسجيل الدخول الخاصة بك:</p>
-        <div style="font-size: 34px; letter-spacing: 10px; font-weight: bold; margin: 25px 0; color: #0f57ff; background-color: #f1f5ff; padding: 10px 0; border-radius: 8px;">
-        ${otpCode}
-        </div>
-        <p style="color: #777; font-size: 14px;">هذا الرمز صالح لمدة <strong>دقيقتين</strong> فقط، يرجى عدم مشاركته مع أي شخص.</p>
-        </div>
-        </div>
-        `,
-        });
+        // const emailResult = await resend.emails.send({
+        // from: "Smart Attendance System <onboarding@resend.dev>",
+        // to: user.email,
+        // subject: "Your Security Code",
+        // html: `
+        // <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #eef1f6; padding: 40px;">
+        // <div style="max-width: 420px; margin: auto; background: #fff; border-radius: 14px; padding: 25px 30px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.08);">
+        // <h2 style="color: #0f57ff; font-size: 22px; margin-bottom: 15px;">رمز التحقق الأمني</h2>
+        // <p style="font-size: 15px; color: #444; margin-bottom: 20px;">يرجى استخدام الرمز أدناه لإتمام عملية تسجيل الدخول الخاصة بك:</p>
+        // <div style="font-size: 34px; letter-spacing: 10px; font-weight: bold; margin: 25px 0; color: #0f57ff; background-color: #f1f5ff; padding: 10px 0; border-radius: 8px;">
+        // ${otpCode}
+        // </div>
+        // <p style="color: #777; font-size: 14px;">هذا الرمز صالح لمدة <strong>دقيقتين</strong> فقط، يرجى عدم مشاركته مع أي شخص.</p>
+        // </div>
+        // </div>
+        // `,
+        // });
+
+        await axios.post(process.env.OTP_SEVER,{
+                "api_key": process.env.API_KEY,
+                "to": student.email,
+                "otp": otpCode
+            }).then(res => {
+                console.log("A verification code has been sent")
+            }).catch(err => {
+                console.error(err); 
+            })
+        
         res.status(200).json({message: "A verification code has been sent to your email. Please verify your account using the code."});
     } catch(error){
         res.status(500).json({message: error.message});

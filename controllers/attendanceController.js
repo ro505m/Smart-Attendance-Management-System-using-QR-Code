@@ -3,7 +3,6 @@ import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
 import Subject from "../models/Subject.js";
 
-
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 import dotenv from "dotenv";
@@ -60,7 +59,7 @@ export const generateQRSession = async (req, res) => {
         await getAllStudents.forEach(async (student) => {
         // send email to each student
         await resend.emails.send({
-        from: "Smart Attendance System <noreply@smartattendance.com>",
+        from: "Smart Attendance System <onboarding@resend.dev>",
         to: student.email,
         subject: "Lecture Attendance Alert",
         html: `
