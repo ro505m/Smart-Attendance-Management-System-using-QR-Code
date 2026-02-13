@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Joi from "joi";
 
+// Define the Subject schema
 const subjectSchema = new mongoose.Schema({
     name: {
     type: String,
